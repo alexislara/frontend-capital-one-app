@@ -46,6 +46,33 @@ export default function ChatScreen() {
 
   const renderItem = ({ item }) => <AnimatedMessage text={item.text} sender={item.sender} />;
 
+  const [active, setActive] = useState(null); // botón activo
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  // Textos distintos para cada botón
+  const tooltips = {
+    Chats: 'Aquí verás tus conversaciones',
+    Contactos: 'Lista de tus contactos',
+    Ajustes: 'Diseñado para personalizar tu experiencia de una mejor manera, a tu gusto ',
+  };
+
+  const handlePressIn = (button) => {
+    setActive(button);
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.timing(fadeAnim, {
+      toValue: 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => setActive(null));
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" />
@@ -57,6 +84,25 @@ export default function ChatScreen() {
       >
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Chat con Chat Bot</Text>
+        </View>
+        <View style={styles.navbar}>
+          {Object.keys(tooltips).map((item, index) => (
+            <View key={index} style={styles.navItem}>
+              <TouchableOpacity
+                onPressIn={() => handlePressIn(item)}
+                onPressOut={handlePressOut}
+              >
+                <Text style={styles.navText}>{item}</Text>
+              </TouchableOpacity>
+
+              {/* Tooltip animado */}
+              {active === item && (
+                <Animated.View style={[styles.tooltip, { opacity: fadeAnim }]}>
+                  <Text style={styles.tooltipText}>{tooltips[item]}</Text>
+                </Animated.View>
+              )}
+            </View>
+          ))}
         </View>
 
         <FlatList
@@ -79,7 +125,9 @@ export default function ChatScreen() {
           <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
             <Text style={styles.sendText}>➤</Text>
           </TouchableOpacity>
-          
+        </View>
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>ChatBot Capital One © 2025</Text>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -184,11 +232,50 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
   },
   botBubble: {
-    backgroundColor: '#1E3A5F', // tono azul oscuro
+    backgroundColor: '#1E3A5F',
     alignSelf: 'flex-start',
   },
   messageText: {
     color: '#E0E0E0',
     fontSize: 16,
+  },
+  footer: {
+    height: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 2.5,
+  },
+  footerText: {
+    fontSize: 12,
+    color: '#888',
+  },
+  navbar: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingVertical: 10,
+    backgroundColor: '#181818',
+  },
+  navItem: {
+    alignItems: 'center',
+  },
+  navText: {
+    color: '#BDBDBD',
+    fontSize: 15,
+  },
+  tooltip: {
+    position: 'absolute',
+    top: 30, // 30px debajo del botón
+    backgroundColor: '#333',
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    borderRadius: 6,
+    zIndex: 10,
+    minWidth: 110,
+    alignItems: 'center',
+  },
+  tooltipText: {
+    color: '#fff',
+    fontSize: 11,
+    textAlign: 'center',
   },
 });
